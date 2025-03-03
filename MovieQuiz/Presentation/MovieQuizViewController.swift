@@ -71,6 +71,10 @@ final class MovieQuizViewController: UIViewController {
     // переменная со счетчиком правильных ответов, изначально 0
     private var correctAnswers = 0
     
+    @IBOutlet var noButton: UIButton!
+    
+    @IBOutlet var yesButton: UIButton!
+    
     @IBOutlet private var imageView: UIImageView!
     
     @IBOutlet private var textLable: UILabel!
@@ -111,6 +115,8 @@ final class MovieQuizViewController: UIViewController {
         //imageView.layer.cornerRadius = 20
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
+        noButton.isEnabled = false
+        yesButton.isEnabled = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.showNextQuestionOrResult()
         }
@@ -133,6 +139,8 @@ final class MovieQuizViewController: UIViewController {
             
             show(quiz: viewModel)
         }
+        noButton.isEnabled = true
+        yesButton.isEnabled = true
     }
     
     private func show(quiz result: QuizResultsViewModel) {
@@ -159,18 +167,10 @@ final class MovieQuizViewController: UIViewController {
     }
     
     @IBAction private func yesButtonClick(_ sender: UIButton) {
-        sender.isEnabled = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            sender.isEnabled = true
-        }
         showAnswerResult(isCorrect: questions[currentQuestionIndex].correctAnswer)
     }
     
     @IBAction private func noButtonClick(_ sender: UIButton) {
-        sender.isEnabled = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            sender.isEnabled = true
-        }
         showAnswerResult(isCorrect: !questions[currentQuestionIndex].correctAnswer)
     }
 }
