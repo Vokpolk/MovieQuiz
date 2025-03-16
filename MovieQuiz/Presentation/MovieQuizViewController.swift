@@ -1,22 +1,20 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController,
+                                     QuestionFactoryDelegate,
+                                     AlertPresenterDelegate {
     
-    // переменная с индексом текущего вопроса, изначально 0
-    // (по этому индексу будем искать вопрос в массиве,
-    //  где индекс первого вопроса 0, а не 1)
     private var currentQuestionIndex = 0
-    // переменная со счетчиком правильных ответов, изначально 0
     private var correctAnswers = 0
+    private var questionsAmount = 10
     
-    private var questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol? = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    private var alertPresenter: AlertPresenterProtocol? = AlertPresenter()
+    private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticServiceProtocol?
     
-    @IBOutlet var noButton: UIButton!
-    @IBOutlet var yesButton: UIButton!
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
     
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLable: UILabel!
@@ -32,8 +30,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     // MARK: - QuestionFactoryDelegate
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        // проверка, что вопрос не nil
-        guard let question = question else {
+        guard let question else {
             return
         }
         
@@ -57,7 +54,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         let questionFactory = QuestionFactory()
         questionFactory.setup(delegate: self)
         self.questionFactory = questionFactory
-        
         questionFactory.requestNextQuestion()
         
         statisticService = StatisticService()
@@ -90,10 +86,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
         
-        noButton.isEnabled = false
-        yesButton.isEnabled = false
+        changeStateButton(isEnabled: false)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.showNextQuestionOrResult()
         }
     }
@@ -112,20 +107,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             currentQuestionIndex += 1
             self.questionFactory?.requestNextQuestion()
         }
-        noButton.isEnabled = true
-        yesButton.isEnabled = true
+        changeStateButton(isEnabled: true)
     }
     
     private func show(quiz result: QuizResultsViewModel) {
         let completion: () -> Void = { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             self.currentQuestionIndex = 0
-            // сбрасываем переменную с количеством правильных ответов
             self.correctAnswers = 0
-            // заново показываем первый вопрос
             self.questionFactory?.requestNextQuestion()
         }
-        var message = result.text + "\n"
+        var message = "\(result.text)\n"
         message += "Количество сыгранных квизов: \(statisticService?.gamesCount ?? 0)\n"
         message += "Рекорд: \(statisticService?.bestGame.correct ?? 0)/\(statisticService?.bestGame.total ?? 0) "
         message += "(\(statisticService?.bestGame.date.dateTimeString ?? ""))\n"
@@ -138,17 +130,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         self.alertPresenter?.requestAlert(model: alertModel)
     }
     
+    private func changeStateButton(isEnabled: Bool) {
+        noButton.isEnabled = isEnabled
+        yesButton.isEnabled = isEnabled
+    }
+    
     @IBAction private func yesButtonClick(_ sender: UIButton) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
+        guard let currentQuestion else { return }
         showAnswerResult(isCorrect: currentQuestion.correctAnswer)
     }
     
     @IBAction private func noButtonClick(_ sender: UIButton) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
+        guard let currentQuestion else { return }
         showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
     }
 }

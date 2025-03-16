@@ -21,29 +21,18 @@ extension StatisticService: StatisticServiceProtocol {
     }
     
     private var correctAnswers: Int {
-        get {
-            storage.integer(forKey: Keys.correctAnswers.rawValue)
-        }
-        set {
-            storage.set(newValue, forKey: Keys.correctAnswers.rawValue)
-        }
+        get { storage.integer(forKey: Keys.correctAnswers.rawValue) }
+        set { storage.set(newValue, forKey: Keys.correctAnswers.rawValue) }
     }
+    
     private var questionsCount: Int {
-        get {
-            storage.integer(forKey: Keys.questionsCount.rawValue)
-        }
-        set {
-            storage.set(newValue, forKey: Keys.questionsCount.rawValue)
-        }
+        get { storage.integer(forKey: Keys.questionsCount.rawValue) }
+        set { storage.set(newValue, forKey: Keys.questionsCount.rawValue) }
     }
     
     var gamesCount: Int {
-        get {
-            storage.integer(forKey: Keys.gamesCount.rawValue)
-        }
-        set {
-            storage.set(newValue, forKey: Keys.gamesCount.rawValue)
-        }
+        get { storage.integer(forKey: Keys.gamesCount.rawValue) }
+        set { storage.set(newValue, forKey: Keys.gamesCount.rawValue) }
     }
     
     var bestGame: GameResult {
