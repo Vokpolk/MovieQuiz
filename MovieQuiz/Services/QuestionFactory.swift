@@ -83,12 +83,35 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
                 print("Failed to load image")
+                self.delegate?.didFailToLoadData(with: error)
             }
             
-            let rating = Float(movie.rating) ?? 0
+            var text = "Рейтинг этого фильма "
             
-            let text = "Рейтинг этого фильма больше чем 7?"
-            let correctAnswer = rating > 7
+            let rating = Float(movie.rating) ?? 0
+            let deltaFromRating: Float = 0.1
+            
+            let variantOfQuestion = (0...3).randomElement()
+            
+            var correctAnswer: Bool
+            
+            switch variantOfQuestion {
+            case 0:
+                correctAnswer = rating > (rating + deltaFromRating)
+                text += String(format: "больше чем %.1f?", rating + deltaFromRating)
+            case 1:
+                correctAnswer = rating > (rating - deltaFromRating)
+                text += String(format: "больше чем %.1f?", rating - deltaFromRating)
+            case 2:
+                correctAnswer = rating < (rating + deltaFromRating)
+                text += String(format: "меньше чем %.1f?", rating + deltaFromRating)
+            case 3:
+                correctAnswer = rating < (rating - deltaFromRating)
+                text += String(format: "меньше чем %.1f?", rating - deltaFromRating)
+            default:
+                text = "Рейтинг этого фильма больше чем 7?"
+                correctAnswer = rating > 7
+            }
             
             let question = QuizQuestion(image: imageData,
                                         text: text,

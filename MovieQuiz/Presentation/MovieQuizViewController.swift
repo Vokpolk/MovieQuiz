@@ -20,7 +20,7 @@ final class MovieQuizViewController: UIViewController,
     @IBOutlet private var textLable: UILabel!
     @IBOutlet private var counterLabel: UILabel!
     
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     // MARK: - AlertPresenterDelegate
     func didReceiveAlert(alert: UIAlertController) {
         DispatchQueue.main.async {
@@ -61,12 +61,13 @@ final class MovieQuizViewController: UIViewController,
         alertPresenter.setup(delegate: self)
         self.alertPresenter = alertPresenter
         
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(),
-                                          delegate: self)
-        
         statisticService = StatisticService()
         
+        activityIndicator.hidesWhenStopped = true
         showLoadingIndicator()
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(),
+                                          delegate: self)
         questionFactory?.loadData()
     }
     
@@ -147,12 +148,10 @@ final class MovieQuizViewController: UIViewController,
     }
     
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
     
     private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
     }
     
