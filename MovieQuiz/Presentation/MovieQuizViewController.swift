@@ -20,6 +20,7 @@ final class MovieQuizViewController: UIViewController,
     @IBOutlet private var textLable: UILabel!
     @IBOutlet private var counterLabel: UILabel!
     
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     // MARK: - AlertPresenterDelegate
     func didReceiveAlert(alert: UIAlertController) {
         DispatchQueue.main.async {
@@ -42,6 +43,15 @@ final class MovieQuizViewController: UIViewController,
         }
     }
     
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: any Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -51,18 +61,20 @@ final class MovieQuizViewController: UIViewController,
         alertPresenter.setup(delegate: self)
         self.alertPresenter = alertPresenter
         
-        let questionFactory = QuestionFactory()
-        questionFactory.setup(delegate: self)
-        self.questionFactory = questionFactory
-        questionFactory.requestNextQuestion()
-        
         statisticService = StatisticService()
+        
+        activityIndicator.hidesWhenStopped = true
+        showLoadingIndicator()
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(),
+                                          delegate: self)
+        questionFactory?.loadData()
     }
     
     // приватный метод конвертации, который принимает моковый вопрос и возрващает вью модель
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let convert: QuizStepViewModel = QuizStepViewModel(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return convert
@@ -133,6 +145,31 @@ final class MovieQuizViewController: UIViewController,
     private func changeStateButton(isEnabled: Bool) {
         noButton.isEnabled = isEnabled
         yesButton.isEnabled = isEnabled
+    }
+    
+    private func showLoadingIndicator() {
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        
+        let completion: () -> Void = { [weak self] in
+            guard let self else { return }
+            self.currentQuestionIndex = 0
+            self.correctAnswers = 0
+            self.questionFactory?.requestNextQuestion()
+        }
+        let alertModel = AlertModel(title: "Ошибка",
+                                    message: message,
+                                    buttonText: "Попробовать еще раз",
+                                    completion: completion)
+        
+        self.alertPresenter?.requestAlert(model: alertModel)
     }
     
     @IBAction private func yesButtonClick(_ sender: UIButton) {
