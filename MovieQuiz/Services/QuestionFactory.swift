@@ -86,41 +86,47 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 self.delegate?.didFailToLoadData(with: error)
             }
             
-            var text = "Рейтинг этого фильма "
-            
-            let rating = Float(movie.rating) ?? 0
-            let deltaFromRating: Float = 0.1
-            
-            let variantOfQuestion = (0...3).randomElement()
-            
-            var correctAnswer: Bool
-            
-            switch variantOfQuestion {
-            case 0:
-                correctAnswer = rating > (rating + deltaFromRating)
-                text += String(format: "больше чем %.1f?", rating + deltaFromRating)
-            case 1:
-                correctAnswer = rating > (rating - deltaFromRating)
-                text += String(format: "больше чем %.1f?", rating - deltaFromRating)
-            case 2:
-                correctAnswer = rating < (rating + deltaFromRating)
-                text += String(format: "меньше чем %.1f?", rating + deltaFromRating)
-            case 3:
-                correctAnswer = rating < (rating - deltaFromRating)
-                text += String(format: "меньше чем %.1f?", rating - deltaFromRating)
-            default:
-                text = "Рейтинг этого фильма больше чем 7?"
-                correctAnswer = rating > 7
-            }
+            let questionAndCorrectAnswer = makeQuestionAndCorrectAnswer(movie)
             
             let question = QuizQuestion(image: imageData,
-                                        text: text,
-                                        correctAnswer: correctAnswer)
+                                        text: questionAndCorrectAnswer.text,
+                                        correctAnswer: questionAndCorrectAnswer.correctAnswer)
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.delegate?.didReceiveNextQuestion(question: question)
             }
         }
+    }
+    
+    private func makeQuestionAndCorrectAnswer(_ movie: MostPopularMovie) -> (text: String, correctAnswer: Bool) {
+        var text = "Рейтинг этого фильма "
+        
+        let rating = Float(movie.rating) ?? 0
+        let deltaFromRating: Float = 0.1
+        
+        let variantOfQuestion = (0...3).randomElement()
+        
+        var correctAnswer: Bool
+        
+        switch variantOfQuestion {
+        case 0:
+            correctAnswer = rating > (rating + deltaFromRating)
+            text += String(format: "больше чем %.1f?", rating + deltaFromRating)
+        case 1:
+            correctAnswer = rating > (rating - deltaFromRating)
+            text += String(format: "больше чем %.1f?", rating - deltaFromRating)
+        case 2:
+            correctAnswer = rating < (rating + deltaFromRating)
+            text += String(format: "меньше чем %.1f?", rating + deltaFromRating)
+        case 3:
+            correctAnswer = rating < (rating - deltaFromRating)
+            text += String(format: "меньше чем %.1f?", rating - deltaFromRating)
+        default:
+            text = "Рейтинг этого фильма больше чем 7?"
+            correctAnswer = rating > 7
+        }
+        
+        return (text, correctAnswer)
     }
 }
